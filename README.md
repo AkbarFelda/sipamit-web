@@ -70,4 +70,4 @@ Akses `http://localhost:3000`. Gunakan mode *Inspect Element* (F12) dan aktifkan
 
 ---
 
-*© 2025 PDAM Sleman. All rights reserved.*
+

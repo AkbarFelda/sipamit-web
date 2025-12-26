@@ -40,7 +40,7 @@ Aplikasi ini mengikuti prinsip **Clean Architecture** sederhana untuk memisahkan
 
 1. **Clone repositori**:
 ```bash
-git clone https://github.com/username/sipamit-web.git
+git clone https://github.com/AkbarFelda/sipamit-web.git
 cd sipamit-web
 
 ```

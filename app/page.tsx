@@ -28,8 +28,8 @@ export default function LoginPage() {
           <Image
             src="/image/pdamlogo.svg"
             alt="Logo PDAM"
-            width={215}
-            height={148}
+            width={150}
+            height={103}
             priority
           />
         </div>

@@ -5,21 +5,33 @@ import { LucideIcon } from "lucide-react";
 interface MenuCardProps {
   icon: LucideIcon;
   label: string;
+  count?: number;
   onClick?: () => void;
-  iconColor?: string;
 }
 
-export default function MenuCard({ icon: Icon, label, onClick, iconColor = "text-blue-600" }: MenuCardProps) {
+export default function MenuCard({
+  icon: Icon,
+  label,
+  count,
+  onClick,
+}: MenuCardProps) {
   return (
-    <button 
+    <button
       onClick={onClick}
-      className="aspect-square bg-white/80 rounded-3xl shadow-sm backdrop-blur-sm 
-                 active:scale-95 transition-all flex flex-col items-center justify-center gap-3 p-4"
+      className="relative flex flex-col items-center justify-center p-6 bg-white rounded-3xl shadow-sm hover:shadow-md transition-all border border-gray-100 group"
     >
-      <div className={`p-3 rounded-2xl bg-gray-50 ${iconColor}`}>
-        <Icon size={32} strokeWidth={2.5} />
+      {count !== undefined && count > 0 && (
+        <div className="absolute top-3 right-3 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+          {count}
+        </div>
+      )}
+
+      <div className="p-3 bg-blue-100 rounded-2xl text-blue-600 mb-3 group-hover:scale-110 transition-transform">
+        <Icon size={28} />
       </div>
-      <span className="text-sm font-bold text-gray-800">{label}</span>
+      <span className="text-xs font-bold text-gray-700 text-center leading-tight">
+        {label}
+      </span>
     </button>
   );
 }

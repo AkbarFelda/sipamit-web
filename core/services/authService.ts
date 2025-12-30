@@ -32,7 +32,6 @@ export const authService = {
 //     return res.json();
 //   }, 
 
-// Logic untuk Logout
 logout: () => {
     localStorage.removeItem("user_token");
   }

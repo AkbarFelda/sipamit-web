@@ -2,20 +2,20 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/presentation/components/LoginPage/Button";
 import InputPassword from "@/presentation/components/LoginPage/InputPassword";
 import Input from "@/presentation/components/LoginPage/Input";
 import MobileContainer from "@/presentation/components/MobileContainer";
+import { useAuth } from "@/presentation/hooks/useAuth"; //
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const router = useRouter();
+  const { login, loading, error } = useAuth(); 
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (username && password) {
-      router.push("/homepage");
+      await login({ username, password });
     } else {
       alert("Silakan isi username dan password");
     }
@@ -39,6 +39,7 @@ export default function LoginPage() {
           <p className="text-sm font-normal opacity-80">
             Masukkan username & katasandi untuk masuk
           </p>
+          {error && <p className="text-red-500 text-xs mt-2 font-bold">{error}</p>}
         </div>
 
         <div className="flex flex-col gap-4 p-8 mt-4">
@@ -56,7 +57,11 @@ export default function LoginPage() {
             onChange={setPassword}
           />
 
-          <Button label="Masuk" onClick={handleLogin} />
+          <Button 
+            label={loading ? "Tunggu..." : "Masuk"} 
+            onClick={handleLogin} 
+            disabled={loading} 
+          />
         </div>
       </div>
 

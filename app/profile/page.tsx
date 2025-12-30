@@ -34,7 +34,6 @@ export default function ProfilePage() {
           <p className="text-xs text-gray-400">NIP: {userProfile.nip}</p>
         </div>
 
-        {/* Card Detail Informasi */}
         <div className="bg-white rounded-4xl p-6 shadow-sm border border-gray-100 space-y-5 mb-6">
           <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider mb-2">Informasi Kerja</h3>
           
@@ -69,7 +68,6 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Menu Aksi Lainnya */}
         <div className="space-y-3">
           <button 
             onClick={() => router.push("/change-password")}

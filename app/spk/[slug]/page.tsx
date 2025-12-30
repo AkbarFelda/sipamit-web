@@ -99,7 +99,6 @@ export default function SPKDetailPage() {
       </div>
 
       <div className="p-4 space-y-4">
-        {/* --- SEARCH & TOMBOL FILTER --- */}
         <div className="flex gap-2">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-3 text-gray-400" size={18} />
@@ -123,7 +122,6 @@ export default function SPKDetailPage() {
           </button>
         </div>
 
-        {/* --- PANEL FILTER (YANG DITAMBAHKAN) --- */}
         {isFilterOpen && (
           <div className="bg-white p-5 rounded-4xl border border-blue-100 shadow-sm animate-in slide-in-from-top duration-300">
             <div className="flex items-center gap-2 mb-4 text-gray-800 font-bold text-sm">

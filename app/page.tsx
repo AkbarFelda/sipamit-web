@@ -6,7 +6,8 @@ import { Button } from "@/presentation/components/LoginPage/Button";
 import InputPassword from "@/presentation/components/LoginPage/InputPassword";
 import Input from "@/presentation/components/LoginPage/Input";
 import MobileContainer from "@/presentation/components/MobileContainer";
-import { useAuth } from "@/presentation/hooks/useAuth"; //
+import { useAuth } from "@/presentation/hooks/useAuth";
+import LoadingOverlay from "@/presentation/components/LoadingOverlay"; 
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -22,7 +23,9 @@ export default function LoginPage() {
   };
 
   return (
-    <MobileContainer className="bg-linear-to-b from-blue-top to-blue-bottom flex flex-col justify-between py-10">
+    <MobileContainer className="bg-linear-to-b from-blue-top to-blue-bottom flex flex-col justify-between py-10"> 
+      {loading && <LoadingOverlay message="Memverifikasi Akun..." />}
+
       <div>
         <div className="flex justify-center mb-6">
           <Image
@@ -58,7 +61,7 @@ export default function LoginPage() {
           />
 
           <Button 
-            label={loading ? "Tunggu..." : "Masuk"} 
+            label="Masuk"
             onClick={handleLogin} 
             disabled={loading} 
           />

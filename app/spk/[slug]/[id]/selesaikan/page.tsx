@@ -50,7 +50,7 @@ export default function SelesaikanSPKPage({ params }: { params: Promise<{ id: st
 
       <div className="p-6 space-y-6">
         {/* Step 1: Foto */}
-        <div className="bg-white p-5 rounded-[32px] shadow-sm border border-gray-100">
+        <div className="bg-white p-5 rounded-4xl shadow-sm border border-gray-100">
           <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
             <Camera size={18} className="text-blue-600" /> Foto Bukti Kerja
           </h3>
@@ -70,7 +70,7 @@ export default function SelesaikanSPKPage({ params }: { params: Promise<{ id: st
         </div>
 
         {/* Step 2: Angka Meter */}
-        <div className="bg-white p-5 rounded-[32px] shadow-sm border border-gray-100">
+        <div className="bg-white p-5 rounded-4xl shadow-sm border border-gray-100">
           <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
             <Hash size={18} className="text-blue-600" /> Input Angka Meter
           </h3>
@@ -78,7 +78,7 @@ export default function SelesaikanSPKPage({ params }: { params: Promise<{ id: st
         </div>
 
         {/* Step 3: Tanda Tangan */}
-        <div className="bg-white p-5 rounded-[32px] shadow-sm border border-gray-100">
+        <div className="bg-white p-5 rounded-4xl shadow-sm border border-gray-100">
           <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
             <PenTool size={18} className="text-blue-600" /> Konfirmasi Pelanggan
           </h3>
@@ -91,7 +91,7 @@ export default function SelesaikanSPKPage({ params }: { params: Promise<{ id: st
         {/* Submit Button */}
         <button
           onClick={handleFinish}
-          className="w-full bg-green-600 text-white py-4 rounded-[24px] font-bold flex items-center justify-center gap-2 shadow-xl shadow-green-100 active:scale-95 transition-all mt-4"
+          className="w-full bg-green-600 text-white py-4 rounded-3xl font-bold flex items-center justify-center gap-2 shadow-xl shadow-green-100 active:scale-95 transition-all mt-4"
         >
           <CheckCircle size={20} /> KIRIM LAPORAN SEKARANG
         </button>

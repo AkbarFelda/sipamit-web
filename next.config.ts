@@ -9,11 +9,12 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
-      // Jika nanti kamu pakai URL dari server/database sendiri, tambahkan di sini
-      // {
-      //   protocol: 'https',
-      //   hostname: 'alamat-api-kamu.com',
-      // },
+      {
+        protocol: 'https',
+        hostname: 'backend-mrk-js.vercel.app',
+        port: '',
+        pathname: '/**',
+      }
     ],
   },
 };

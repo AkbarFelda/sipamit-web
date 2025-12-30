@@ -4,9 +4,11 @@ import MobileContainer from "@/presentation/components/MobileContainer";
 import HeaderPage from "@/presentation/components/HeaderPage";
 import {  Mail, Phone, Building2, ShieldCheck, ChevronRight, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/presentation/hooks/useAuth";
 
 export default function ProfilePage() {
   const router = useRouter();
+  const { logout } = useAuth();
 
   const userProfile = {
     nama: "Akmal Reza",
@@ -83,7 +85,7 @@ export default function ProfilePage() {
           </button>
 
           <button 
-            onClick={() => router.push("/")}
+            onClick={logout}
             className="w-full flex items-center justify-between p-4 bg-red-50 rounded-2xl border border-red-100 active:scale-95 transition-all"
           >
             <div className="flex items-center gap-3">
@@ -95,7 +97,6 @@ export default function ProfilePage() {
           </button>
         </div>
 
-        {/* Versi Aplikasi */}
         <p className="text-center text-[10px] text-gray-300 mt-8 font-medium">
           SIPAMIT Mobile Version 1.0.0 (Stable)
         </p>

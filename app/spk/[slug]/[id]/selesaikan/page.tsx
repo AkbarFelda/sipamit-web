@@ -137,7 +137,7 @@ export default function SelesaikanSPKPage({ params }: { params: Promise<{ id: st
     <MobileContainer className="bg-gray-50 flex flex-col min-h-screen pb-10 text-black">
       {loading && !showSuccess && <LoadingOverlay message="Sedang memproses laporan..." />}
       {showSuccess && <SuccessPopup message="Laporan tugas Anda telah berhasil terkirim ke sistem." />}
-      <HeaderPage title={`Selesaikan ${slug.replace("-", " ").toUpperCase()}`} />
+      <HeaderPage title={`Selesaikan ${slug.replace("-", " ").toWellFormed()}`} />
       <div className="p-6 space-y-6">
         {slug === "pasang-baru" && (
           <div className="bg-white p-5 rounded-4xl shadow-sm border border-gray-100">

@@ -7,6 +7,7 @@ import { User, LogOut, Lock, Unlock, X } from "lucide-react";
 
 import MenuCard from "@/presentation/components/HomePage/MenuCard";
 import MobileContainer from "@/presentation/components/MobileContainer";
+import LoadingOverlay from "@/presentation/components/LoadingOverlay"; // Import LoadingOverlay
 import { useGreeting } from "@/presentation/hooks/useGreeting";
 import { useAuth } from "@/presentation/hooks/useAuth";
 import { spkService } from "@/core/services/spkService";
@@ -15,9 +16,11 @@ export default function HomePage() {
   const router = useRouter();
   const greeting = useGreeting();
   const { logout } = useAuth();
+  
   const [isSealingModalOpen, setIsSealingModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true); // State loading awal true
   const token = Cookies.get("user_token") || "";
+  
   const [stats, setStats] = useState({
     pasangBaru: 0,
     pelayananLain: 0,
@@ -32,9 +35,13 @@ export default function HomePage() {
 
   useEffect(() => {
     const fetchStats = async () => {
-      if (!token) return;
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
+      
       try {
-        setIsLoading(true);
+        setIsLoading(true); // Pastikan loading aktif saat mulai fetch
         const [psb, aduan, nonAir, segel] = await Promise.all([
           spkService.getList("pasang-baru", 0, token),
           spkService.getList("pengaduan", 0, token),
@@ -51,7 +58,7 @@ export default function HomePage() {
       } catch (error) {
         console.error("Error fetching stats:", error);
       } finally {
-        setIsLoading(false);
+        setIsLoading(false); // Matikan loading setelah selesai (berhasil/gagal)
       }
     };
 
@@ -68,6 +75,11 @@ export default function HomePage() {
 
   return (
     <MobileContainer className="bg-linear-to-b from-blue-50 to-white p-6 flex flex-col min-h-screen relative text-black">
+      
+      {/* Tampilkan Loading Overlay jika isLoading true */}
+      {isLoading && <LoadingOverlay message="Mohon menunggu" />}
+
+      {/* HEADER SECTION */}
       <div className="flex justify-between items-center mb-8">
         <div className="flex items-center gap-4">
           <button
@@ -95,6 +107,7 @@ export default function HomePage() {
         </div>
       </div>
 
+      {/* INFO CARD */}
       <div className="bg-white/30 backdrop-blur-md p-4 rounded-2xl mb-8 border border-white/20">
         <p className="text-xs font-bold text-blue-800 uppercase tracking-wider mb-1">
           Informasi
@@ -105,6 +118,7 @@ export default function HomePage() {
         </h2>
       </div>
 
+      {/* MENU GRID */}
       <div className="grid grid-cols-2 gap-4 mb-10">
         <MenuCard
           icon={User}
@@ -148,6 +162,7 @@ export default function HomePage() {
         />
       </div>
 
+      {/* MODAL PENYEGELAN */}
       {isSealingModalOpen && (
         <div
           className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end justify-center transition-all duration-300"

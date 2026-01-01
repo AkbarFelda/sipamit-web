@@ -54,7 +54,7 @@ export interface GenericSPKDetail {
   url_foto_ttd?: string | null;
   nometer?: string | number | null;
   stan_meter?: string | number | null;
-  url_foto_buka?: string | null;      // <--- Tambahkan ini
-  url_foto_ttd_proses?: string | null; // <--- Tambahkan ini
-  url_foto_ttd_buka?: string | null;   // <--- Tambahkan ini
+  url_foto_buka?: string | null;     
+  url_foto_ttd_proses?: string | null; 
+  url_foto_ttd_buka?: string | null;
 }

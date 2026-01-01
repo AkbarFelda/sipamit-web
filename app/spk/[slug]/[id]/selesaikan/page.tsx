@@ -13,6 +13,7 @@ import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import { spkService } from "@/core/services/spkService";
 import { MerekMeter } from "@/core/types/merekmeter";
+import SuccessPopup from "@/presentation/components/SuccessPopup"; // Import Popup
 
 interface JenisPenyelesaian {
   id: number;
@@ -23,13 +24,11 @@ export default function SelesaikanSPKPage({ params }: { params: Promise<{ id: st
   const { id, slug } = use(params);
   const router = useRouter();
   const sigCanvas = useRef<SignatureCanvas>(null);
-
   const [loading, setLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false); // State untuk Popup
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [meterReading, setMeterReading] = useState("");
   const [keterangan, setKeterangan] = useState("");
-  
-  // States untuk Dropdowns
   const [listMerek, setListMerek] = useState<MerekMeter[]>([]);
   const [selectedMerekId, setSelectedMerekId] = useState("");
   const [listJenisPenyelesaian, setListJenisPenyelesaian] = useState<JenisPenyelesaian[]>([]);
@@ -37,10 +36,8 @@ export default function SelesaikanSPKPage({ params }: { params: Promise<{ id: st
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
 
-  // Fetch Data Dropdown berdasarkan Kategori (Slug)
   useEffect(() => {
     const token = Cookies.get("user_token") || "";
-    
     if (slug === "pasang-baru") {
       const fetchMerek = async () => {
         try {
@@ -102,7 +99,6 @@ export default function SelesaikanSPKPage({ params }: { params: Promise<{ id: st
       const token = Cookies.get("user_token") || "";
       const formData = new FormData();
       formData.append("id", id);
-
       if (slug === "pasang-baru") {
         formData.append("merek_id", selectedMerekId);
         formData.append("nometer", meterReading);
@@ -124,24 +120,25 @@ export default function SelesaikanSPKPage({ params }: { params: Promise<{ id: st
       }
 
       await spkService.submitProses(slug, formData, token);
-      alert("Laporan Berhasil Dikirim!");
-      router.push("/");
+      setLoading(false);
+      setShowSuccess(true);
+      setTimeout(() => {
+        router.push(`/spk/${slug}`);
+      }, 2000);
+
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Terjadi kesalahan";
       alert("Gagal mengirim: " + msg);
-    } finally {
       setLoading(false);
     }
   };
 
   return (
     <MobileContainer className="bg-gray-50 flex flex-col min-h-screen pb-10 text-black">
-      {loading && <LoadingOverlay message="Sedang memproses laporan..." />}
+      {loading && !showSuccess && <LoadingOverlay message="Sedang memproses laporan..." />}
+      {showSuccess && <SuccessPopup message="Laporan tugas Anda telah berhasil terkirim ke sistem." />}
       <HeaderPage title={`Selesaikan ${slug.replace("-", " ").toUpperCase()}`} />
-
       <div className="p-6 space-y-6">
-        
-        {/* 1. DROPDOWNS (Merek atau Jenis Penyelesaian) */}
         {slug === "pasang-baru" && (
           <div className="bg-white p-5 rounded-4xl shadow-sm border border-gray-100">
             <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2 text-sm">
@@ -177,7 +174,6 @@ export default function SelesaikanSPKPage({ params }: { params: Promise<{ id: st
           </div>
         )}
 
-        {/* 2. Keterangan (Hanya Pengaduan) */}
         {slug === "pengaduan" && (
           <div className="bg-white p-5 rounded-4xl shadow-sm border border-gray-100">
             <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2 text-sm">
@@ -192,7 +188,6 @@ export default function SelesaikanSPKPage({ params }: { params: Promise<{ id: st
           </div>
         )}
 
-        {/* 3. Input Foto */}
         <div className="bg-white p-5 rounded-4xl shadow-sm border border-gray-100">
           <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2 text-sm">
             <Camera size={18} className="text-blue-600" /> 
@@ -211,7 +206,6 @@ export default function SelesaikanSPKPage({ params }: { params: Promise<{ id: st
           )}
         </div>
 
-        {/* 4. Stan/Nomor Meter (PSB & Buka Segel) */}
         {(slug === "pasang-baru" || slug === "buka-segel") && (
           <div className="bg-white p-5 rounded-4xl shadow-sm border border-gray-100">
             <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2 text-sm">
@@ -228,7 +222,6 @@ export default function SelesaikanSPKPage({ params }: { params: Promise<{ id: st
           </div>
         )}
 
-        {/* 5. Tanda Tangan */}
         <div className="bg-white p-5 rounded-4xl shadow-sm border border-gray-100">
           <div className="flex justify-between items-center mb-4">
             <h3 className="font-bold text-gray-800 flex items-center gap-2 text-sm">
@@ -243,14 +236,13 @@ export default function SelesaikanSPKPage({ params }: { params: Promise<{ id: st
 
         <button
           onClick={handleFinish}
-          disabled={loading}
+          disabled={loading || showSuccess}
           className="w-full bg-blue-600 text-white py-5 rounded-3xl font-black flex items-center justify-center gap-3 shadow-xl active:scale-95 transition-all mt-4 mb-10 disabled:bg-gray-300"
         >
           <CheckCircle size={22} /> SIMPAN & KIRIM LAPORAN
         </button>
       </div>
 
-      {/* MODALS */}
       {isPickerOpen && (
         <ImagePickerSource
           onClose={() => setIsPickerOpen(false)}

@@ -45,7 +45,7 @@ export default function ImagePickerSource({
             <div className="p-3 bg-gray-600 rounded-2xl text-white shadow-lg shadow-gray-200">
               <ImageIcon size={28} />
             </div>
-            <span className="font-bold text-gray-700 text-sm">Galeri HP</span>
+            <span className="font-bold text-gray-700 text-sm">Galeri</span>
           </label>
         </div>
 

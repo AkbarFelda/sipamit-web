@@ -261,6 +261,9 @@ export default function DetailPelangganPage({
             {slug === "pasang-baru" && (
               <>
                 <CostItem label="Biaya Peralatan" value={detail?.biaya_peralatan} />
+                <CostItem label="Biaya Survey" value={detail?.biaya_survey} />
+                <CostItem label="Biaya Jasa Lainnya" value={detail?.biaya_jl} />
+                <CostItem label="Biaya Lain-lain" value={detail?.biaya_lainnya} />
                 <CostItem label="Ongkos Pasang" value={detail?.biaya_ongkos} />
                 <CostItem label="Pajak (PPN)" value={detail?.ppn} />
                 <CostItem label="Diskon" value={detail?.diskon} isDiscount />

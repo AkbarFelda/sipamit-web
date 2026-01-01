@@ -42,8 +42,19 @@ export interface GenericSPKDetail {
   biaya_bukasegel?: string | number;
   no_aduan?: string;
   jenis_aduan?: string;
+  jenis_penyelesaian?: string;
   ket_aduan?: string;
   url_foto_aduan?: string | null;
   url_foto_penyelesaian?: string | null;
   completed_at?: string | null;
+  flagproses?: number;
+  flagselesai?: number;
+  flagbukasegel?: number;
+  url_foto_proses?: string | null;
+  url_foto_ttd?: string | null;
+  nometer?: string | number | null;
+  stan_meter?: string | number | null;
+  url_foto_buka?: string | null;      // <--- Tambahkan ini
+  url_foto_ttd_proses?: string | null; // <--- Tambahkan ini
+  url_foto_ttd_buka?: string | null;   // <--- Tambahkan ini
 }

@@ -5,7 +5,7 @@ import { CheckCircle2 } from "lucide-react";
 
 export default function SuccessPopup({ message }: { message: string }) {
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-999 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
       <motion.div 
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}

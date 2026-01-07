@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   title: "Mobile Teknik",
   description: "Aplikasi Teknik SIPAMIT",
   icons: {
-    icon: "public/image/pdamlogo.svg",
+    icon: "/pdamlogo.ico",
   },
 };
 

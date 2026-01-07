@@ -78,7 +78,7 @@ export default function SPKDetailPage() {
 
   return (
     <MobileContainer className="bg-gray-50 flex flex-col min-h-screen pb-10 text-black">
-      <HeaderPage fallbackPath={`/spk/${slug}`} title={title} />
+      <HeaderPage fallbackPath={`/homepage`} title={title} />
       <div className="flex bg-white border-b sticky top-0 z-10">
         {(["Sedang Diproses", "Selesai"] as TabStatus[]).map((tab) => (
           <button

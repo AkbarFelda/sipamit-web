@@ -165,14 +165,16 @@ export default function HomePage() {
         <MenuCard
           icon={User}
           label={"SPK Ganti Meter"}
-          disabled={isLoading}
+          disabled={true}
+          badge="Akan Hadir"
           count={stats.gantiMeter}
           onClick={() => router.push(`/spk/ganti-meter`)}
         />
         <MenuCard
           icon={User}
           label={"SPK Pemutusan"}
-          disabled={isLoading}
+          disabled={true}
+          badge="Akan Hadir"
           count={stats.pemutusanTagihan}
           onClick={() => router.push(`/spk/pemutusan`)}
         />

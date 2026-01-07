@@ -13,7 +13,7 @@ import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import { spkService } from "@/core/services/spkService";
 import { MerekMeter } from "@/core/types/merekmeter";
-import SuccessPopup from "@/presentation/components/SuccessPopup"; // Import Popup
+import SuccessPopup from "@/presentation/components/SuccessPopup"; 
 
 interface JenisPenyelesaian {
   id: number;
@@ -25,7 +25,7 @@ export default function SelesaikanSPKPage({ params }: { params: Promise<{ id: st
   const router = useRouter();
   const sigCanvas = useRef<SignatureCanvas>(null);
   const [loading, setLoading] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false); // State untuk Popup
+  const [showSuccess, setShowSuccess] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [meterReading, setMeterReading] = useState("");
   const [keterangan, setKeterangan] = useState("");
@@ -142,7 +142,7 @@ export default function SelesaikanSPKPage({ params }: { params: Promise<{ id: st
     <MobileContainer className="bg-gray-50 flex flex-col min-h-screen pb-10 text-black">
       {loading && !showSuccess && <LoadingOverlay message="Sedang memproses laporan..." />}
       {showSuccess && <SuccessPopup message="Laporan tugas Anda telah berhasil terkirim ke sistem." />}
-      <HeaderPage title={`Selesaikan ${slug.replace("-", " ").toWellFormed()}`} />
+      <HeaderPage fallbackPath={`/spk/${slug}`} title={`Selesaikan ${slug.replace("-", " ").toWellFormed()}`} />
       <div className="p-6 space-y-6">
         {slug === "pasang-baru" && (
           <div className="bg-white p-5 rounded-4xl shadow-sm border border-gray-100">

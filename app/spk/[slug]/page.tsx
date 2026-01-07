@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import MobileContainer from "@/presentation/components/MobileContainer";
 import HeaderPage from "@/presentation/components/HeaderPage";
 import { useParams, useRouter } from "next/navigation";
@@ -14,6 +14,7 @@ import {
   Filter,
   X,
   Tag,
+  RefreshCw, 
 } from "lucide-react";
 import LoadingOverlay from "@/presentation/components/LoadingOverlay";
 
@@ -24,61 +25,60 @@ export default function SPKDetailPage() {
   const router = useRouter();
   const slug = (params?.slug as string) || "";
   const title = slug ? slug.replace(/-/g, " ").toUpperCase() : "DETAIL DATA";
+  
   const [activeTab, setActiveTab] = useState<TabStatus>("Sedang Diproses");
   const [searchQuery, setSearchQuery] = useState("");
-
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filterType, setFilterType] = useState("Semua Tipe");
+  const [displayLimit, setDisplayLimit] = useState(10);
+  const observerTarget = useRef(null);
+  const { data, loading, error, refetch } = useSPK(slug, activeTab);
+  const handleReload = () => {
+    setDisplayLimit(10);
+    refetch?.(); 
+  };
 
-  const { data, loading, error } = useSPK(slug, activeTab);
+  const handleObserver = useCallback((entries: IntersectionObserverEntry[]) => {
+    const target = entries[0];
+    if (target.isIntersecting && !loading) {
+      setDisplayLimit((prev) => prev + 10);
+    }
+  }, [loading]);
 
-  const handleAction = (
-    e: React.MouseEvent,
-    type: "tel" | "map",
-    value: string
-  ) => {
+  useEffect(() => {
+    const observer = new IntersectionObserver(handleObserver, {
+      threshold: 1.0,
+    });
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+    return () => observer.disconnect();
+  }, [handleObserver]);
+
+  const handleAction = (e: React.MouseEvent, type: "tel" | "map", value: string) => {
     e.stopPropagation();
     if (!value) return;
     if (type === "tel") {
       window.open(`tel:${value}`, "_self");
     } else {
-      window.open(
-        `https://www.google.com/maps/search/?api=1&query=${value}`,
-        "_blank"
-      );
+      window.open(`https://www.google.com/maps/search/?api=1&query=${value}`, "_blank");
     }
   };
 
   const filteredData = Array.isArray(data)
     ? data.filter((item) => {
-        const displayName = (
-          item.nama ||
-          item.namajenis ||
-          item.no_aduan ||
-          ""
-        ).toLowerCase();
-        const displayAddress = (
-          item.alamat ||
-          item.wilayah ||
-          ""
-        ).toLowerCase();
+        const displayName = (item.nama || item.namajenis || item.no_aduan || "").toLowerCase();
+        const displayAddress = (item.alamat || item.wilayah || "").toLowerCase();
         const search = searchQuery.toLowerCase();
+        const matchFilter = filterType === "Semua Tipe" || item.jenis === filterType;
 
-        // Logika tambahan jika filterType diaktifkan (contoh mapping sederhana)
-        const matchFilter =
-          filterType === "Semua Tipe" || item.jenis === filterType;
-
-        return (
-          (displayName.includes(search) || displayAddress.includes(search)) &&
-          matchFilter
-        );
-      })
+        return (displayName.includes(search) || displayAddress.includes(search)) && matchFilter;
+      }).slice(0, displayLimit) 
     : [];
 
   return (
     <MobileContainer className="bg-gray-50 flex flex-col min-h-screen pb-10 text-black">
       <HeaderPage title={title} />
-
       <div className="flex bg-white border-b sticky top-0 z-10">
         {(["Sedang Diproses", "Selesai"] as TabStatus[]).map((tab) => (
           <button
@@ -86,11 +86,10 @@ export default function SPKDetailPage() {
             onClick={() => {
               setActiveTab(tab);
               setIsFilterOpen(false);
+              setDisplayLimit(10); // Reset limit saat ganti tab
             }}
             className={`flex-1 py-4 text-sm font-bold transition-all ${
-              activeTab === tab
-                ? "text-blue-600 border-b-2 border-blue-600"
-                : "text-gray-400"
+              activeTab === tab ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-400"
             }`}
           >
             {tab}
@@ -105,23 +104,27 @@ export default function SPKDetailPage() {
             <input
               type="text"
               placeholder="Cari pelanggan atau jenis..."
-              className="w-full pl-10 pr-4 py-2.5 bg-white rounded-2xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+              className="w-full pl-10 pr-4 py-2.5 bg-white rounded-2xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-black shadow-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
           <button
+            onClick={handleReload}
+            className="p-2.5 bg-white text-gray-600 border border-gray-200 rounded-2xl hover:bg-gray-50 active:rotate-180 transition-all duration-500 shadow-sm"
+          >
+            <RefreshCw size={20} className={loading ? "animate-spin" : ""} />
+          </button>
+
+          <button
             onClick={() => setIsFilterOpen(!isFilterOpen)}
-            className={`p-2.5 rounded-2xl border transition-all ${
-              isFilterOpen
-                ? "bg-blue-600 text-white border-blue-600 shadow-md"
-                : "bg-white text-gray-600 border-gray-200"
+            className={`p-2.5 rounded-2xl border transition-all shadow-sm ${
+              isFilterOpen ? "bg-blue-600 text-white border-blue-600 shadow-md" : "bg-white text-gray-600 border-gray-200"
             }`}
           >
             {isFilterOpen ? <X size={20} /> : <Filter size={20} />}
           </button>
         </div>
-
         {isFilterOpen && (
           <div className="bg-white p-5 rounded-4xl border border-blue-100 shadow-sm animate-in slide-in-from-top duration-300">
             <div className="flex items-center gap-2 mb-4 text-gray-800 font-bold text-sm">
@@ -129,9 +132,7 @@ export default function SPKDetailPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] font-bold text-black uppercase ml-1">
-                  Kategori
-                </label>
+                <label className="text-[10px] font-bold text-black uppercase ml-1">Kategori</label>
                 <select
                   value={filterType}
                   onChange={(e) => setFilterType(e.target.value)}
@@ -144,9 +145,7 @@ export default function SPKDetailPage() {
                 </select>
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] font-bold text-black uppercase ml-1">
-                  Periode
-                </label>
+                <label className="text-[10px] font-bold text-black uppercase ml-1">Periode</label>
                 <div className="bg-gray-100 text-gray-400 text-[10px] flex items-center justify-center rounded-xl h-10 italic border border-gray-200 text-center uppercase font-bold">
                   {activeTab === "Selesai" ? "Desember 2025" : "N/A"}
                 </div>
@@ -161,7 +160,7 @@ export default function SPKDetailPage() {
           </div>
         )}
 
-        {loading && <LoadingOverlay message={`Sinkronisasi data...`} />}
+        {loading && displayLimit === 10 && <LoadingOverlay message={`Sinkronisasi data...`} />}
 
         {error && (
           <div className="bg-red-50 text-red-600 p-4 rounded-2xl text-xs font-bold text-center border border-red-100">
@@ -172,21 +171,12 @@ export default function SPKDetailPage() {
         {!loading && (
           <div className="space-y-3">
             {filteredData.map((item) => {
-              const displayTitle =
-                item.nama || item.namajenis || item.no_aduan || "Tanpa Nama";
-              const displaySubTitle =
-                item.no_regis || item.no_pelanggan || item.no_aduan || "-";
-              const displayAddress =
-                item.alamat ||
-                (item.kel
-                  ? `${item.kelurahan}, ${item.wilayah}`
-                  : item.wilayah) ||
-                "Alamat tidak tersedia";
+              const displayTitle = item.nama || item.namajenis || item.no_aduan || "Tanpa Nama";
+              const displaySubTitle = item.no_regis || item.no_pelanggan || item.no_aduan || "-";
+              const displayAddress = item.alamat || (item.kel ? `${item.kelurahan}, ${item.wilayah}` : item.wilayah) || "Alamat tidak tersedia";
               const displayDate = item.tglrab || item.tanggal || "-";
               const contactInfo = item.no_hp || item.no_telp || "";
-              const mapLocation = item.latitude
-                ? `${item.latitude},${item.longitude}`
-                : item.alamat || "";
+              const mapLocation = item.latitude ? `${item.latitude},${item.longitude}` : item.alamat || "";
 
               return (
                 <div
@@ -205,23 +195,15 @@ export default function SPKDetailPage() {
                         </span>
                       </div>
                     )}
-
                     <h3 className="font-bold text-gray-800 text-sm leading-tight group-hover:text-blue-600 transition-colors">
                       {displayTitle}
                     </h3>
-
                     <div className="flex items-start gap-1">
-                      <MapPin
-                        size={12}
-                        className="text-gray-400 shrink-0 mt-0.5"
-                      />
-                      <p className="text-[11px] text-gray-500 leading-tight line-clamp-2">
-                        {displayAddress}
-                      </p>
+                      <MapPin size={12} className="text-gray-400 shrink-0 mt-0.5" />
+                      <p className="text-[11px] text-gray-500 leading-tight line-clamp-2">{displayAddress}</p>
                     </div>
-
                     <div className="flex items-center gap-1 mt-1 text-[9px] text-gray-400 font-medium italic">
-                      <Calendar size={10} />{" "}
+                      <Calendar size={10} />
                       {new Date(displayDate).toLocaleDateString("id-ID", {
                         day: "numeric",
                         month: "short",
@@ -230,6 +212,7 @@ export default function SPKDetailPage() {
                     </div>
                   </div>
 
+                  {/* Actions Area */}
                   <div className="flex flex-col gap-2 border-l pl-3 border-gray-100">
                     <button
                       onClick={(e) => handleAction(e, "map", mapLocation)}
@@ -241,9 +224,7 @@ export default function SPKDetailPage() {
                       onClick={(e) => handleAction(e, "tel", contactInfo)}
                       disabled={!contactInfo}
                       className={`p-3 rounded-2xl active:scale-90 transition-transform ${
-                        contactInfo
-                          ? "bg-blue-50 text-blue-600"
-                          : "bg-gray-50 text-gray-300"
+                        contactInfo ? "bg-blue-50 text-blue-600" : "bg-gray-50 text-gray-300"
                       }`}
                     >
                       <Phone size={18} />
@@ -253,10 +234,20 @@ export default function SPKDetailPage() {
               );
             })}
 
+            {filteredData.length >= 10 && (
+              <div ref={observerTarget} className="py-4 flex justify-center">
+                {loading ? (
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600" />
+                ) : (
+                  <p className="text-[10px] text-gray-400 italic">Menampilkan {filteredData.length} data</p>
+                )}
+              </div>
+            )}
+
             {filteredData.length === 0 && !error && (
               <div className="flex flex-col items-center justify-center py-20 text-gray-400 space-y-2">
                 <Search size={40} className="opacity-20" />
-                <p className="text-sm italic">Data {slug} tidak ditemukan</p>
+                <p className="text-sm italic">Data tidak ditemukan</p>
               </div>
             )}
           </div>

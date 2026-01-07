@@ -21,6 +21,7 @@ import {
   FileCheck,
   Hash,
   Boxes,
+  Tag,
 } from "lucide-react";
 import Image from "next/image";
 import { useSPKDetail } from "@/presentation/hooks/useSPKDetail";
@@ -107,7 +108,6 @@ export default function DetailPelangganPage({
       <HeaderPage title={`Detail ${slug.replace(/-/g, " ").toWellFormed()}`} />
 
       <div className="p-6 space-y-6">
-        {/* SECTION 1: PROFIL UTAMA */}
         <div className="bg-white p-6 rounded-4xl shadow-sm border border-gray-100 flex flex-col items-center text-center">
           <div className="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mb-3 shadow-lg ring-4 ring-blue-50">
             {(detail?.nama || detail?.namajenis || "U")
@@ -138,28 +138,32 @@ export default function DetailPelangganPage({
           </div>
         </div>
 
-        {/* SECTION 2: BUKTI PENYELESAIAN */}
         {isDone && (
           <div className="bg-green-50/20 p-5 rounded-4xl shadow-sm border border-green-200 space-y-4">
             <h3 className="font-bold text-green-800 flex items-center gap-2 text-sm">
               <FileCheck size={18} /> Bukti Penyelesaian Tugas
             </h3>
 
-            {/* BAR INFO DINAMIS */}
             {slug !== "pengaduan" && (
               <div className="p-3 bg-white rounded-2xl border border-green-100 flex items-center justify-between shadow-sm">
                 <div className="flex items-center gap-2">
                   <div className="bg-green-100 p-2 rounded-lg text-green-600">
-                    {slug === "pasang-baru" ? <Hash size={16} /> : <Boxes size={16} />}
+                    {slug === "pasang-baru" ? (
+                      <Hash size={16} />
+                    ) : (
+                      <Boxes size={16} />
+                    )}
                   </div>
                   <p className="text-[10px] font-black text-gray-400 uppercase">
-                    {slug === "pasang-baru" ? "Nomor Meter Terpasang" : "Merek Meter Terpasang"}
+                    {slug === "pasang-baru"
+                      ? "Nomor Meter Terpasang"
+                      : "Merek Meter Terpasang"}
                   </p>
                 </div>
                 <p className="font-black text-green-700">
-                  {slug === "pasang-baru" 
-                    ? (detail?.nometer || "-") 
-                    : (detail?.merek_meter || "-")}
+                  {slug === "pasang-baru"
+                    ? detail?.nometer || "-"
+                    : detail?.merek_meter || "-"}
                 </p>
               </div>
             )}
@@ -167,24 +171,36 @@ export default function DetailPelangganPage({
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <p className="text-[10px] font-black text-gray-400 uppercase flex items-center gap-1 italic">
-                  <ImageIcon size={10} /> Foto {slug === "buka-segel" ? "Buka" : "Proses"}
+                  <ImageIcon size={10} /> Foto{" "}
+                  {slug === "buka-segel" ? "Buka" : "Proses"}
                 </p>
                 <div
                   className="relative w-full h-32 rounded-2xl overflow-hidden border border-gray-200 bg-gray-100 cursor-pointer shadow-inner"
                   onClick={() => {
-                    const path = slug === "buka-segel" ? detail?.url_foto_buka 
-                               : slug === "pengaduan" ? detail?.url_foto_penyelesaian
-                               : detail?.url_foto_proses;
+                    const path =
+                      slug === "buka-segel"
+                        ? detail?.url_foto_buka
+                        : slug === "pengaduan"
+                        ? detail?.url_foto_penyelesaian
+                        : detail?.url_foto_proses;
                     handlePreview(path);
                   }}
                 >
-                  {(slug === "buka-segel" ? detail?.url_foto_buka 
-                    : slug === "pengaduan" ? detail?.url_foto_penyelesaian
-                    : detail?.url_foto_proses) ? (
+                  {(
+                    slug === "buka-segel"
+                      ? detail?.url_foto_buka
+                      : slug === "pengaduan"
+                      ? detail?.url_foto_penyelesaian
+                      : detail?.url_foto_proses
+                  ) ? (
                     <Image
-                      src={getImageUrl(slug === "buka-segel" ? detail?.url_foto_buka 
-                          : slug === "pengaduan" ? detail?.url_foto_penyelesaian
-                          : detail?.url_foto_proses)}
+                      src={getImageUrl(
+                        slug === "buka-segel"
+                          ? detail?.url_foto_buka
+                          : slug === "pengaduan"
+                          ? detail?.url_foto_penyelesaian
+                          : detail?.url_foto_proses
+                      )}
                       alt="Bukti Kerja"
                       fill
                       className="object-cover"
@@ -205,19 +221,30 @@ export default function DetailPelangganPage({
                 <div
                   className="relative w-full h-32 rounded-2xl overflow-hidden border border-gray-200 bg-white cursor-pointer shadow-inner"
                   onClick={() => {
-                    const ttdPath = slug === "buka-segel" ? detail?.url_foto_ttd_buka 
-                                  : slug === "penyegelan" ? detail?.url_foto_ttd_proses
-                                  : detail?.url_foto_ttd;
+                    const ttdPath =
+                      slug === "buka-segel"
+                        ? detail?.url_foto_ttd_buka
+                        : slug === "penyegelan"
+                        ? detail?.url_foto_ttd_proses
+                        : detail?.url_foto_ttd;
                     handlePreview(ttdPath);
                   }}
                 >
-                  {(slug === "buka-segel" ? detail?.url_foto_ttd_buka 
-                    : slug === "penyegelan" ? detail?.url_foto_ttd_proses
-                    : detail?.url_foto_ttd) ? (
+                  {(
+                    slug === "buka-segel"
+                      ? detail?.url_foto_ttd_buka
+                      : slug === "penyegelan"
+                      ? detail?.url_foto_ttd_proses
+                      : detail?.url_foto_ttd
+                  ) ? (
                     <Image
-                      src={getImageUrl(slug === "buka-segel" ? detail?.url_foto_ttd_buka 
-                          : slug === "penyegelan" ? detail?.url_foto_ttd_proses
-                          : detail?.url_foto_ttd)}
+                      src={getImageUrl(
+                        slug === "buka-segel"
+                          ? detail?.url_foto_ttd_buka
+                          : slug === "penyegelan"
+                          ? detail?.url_foto_ttd_proses
+                          : detail?.url_foto_ttd
+                      )}
                       alt="TTD"
                       fill
                       className="object-contain p-2"
@@ -234,11 +261,11 @@ export default function DetailPelangganPage({
           </div>
         )}
 
-        {/* SECTION 3: FOTO LAMPIRAN AWAL (Pengaduan) */}
         {slug === "pengaduan" && detail?.url_foto_aduan && (
           <div className="bg-white p-5 rounded-4xl shadow-sm border border-gray-100">
             <h3 className="font-bold text-gray-800 flex items-center gap-2 mb-3 text-sm">
-              <ImageIcon size={18} className="text-blue-600" /> Foto Lampiran SPK
+              <ImageIcon size={18} className="text-blue-600" /> Foto Lampiran
+              SPK
             </h3>
             <div
               className="relative w-full h-48 rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 cursor-pointer group shadow-inner"
@@ -258,24 +285,45 @@ export default function DetailPelangganPage({
           </div>
         )}
 
-        {/* SECTION 4: LOKASI & KONTAK */}
         <div className="bg-white p-5 rounded-4xl shadow-sm border border-gray-100 space-y-5">
           <div className="flex items-start gap-4">
             <div className="bg-green-50 p-3 rounded-2xl text-green-600">
               <MapPin size={22} />
             </div>
             <div className="flex-1">
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Informasi Lokasi</p>
-              <p className="text-sm text-gray-800 font-bold leading-relaxed">{detail?.alamat || "Alamat tidak diisi"}</p>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                Informasi Lokasi
+              </p>
+              <p className="text-sm text-gray-800 font-bold leading-relaxed">
+                {detail?.alamat || "Alamat tidak diisi"}
+              </p>
               <div className="mt-2 grid grid-cols-2 gap-y-2 gap-x-1 border-t border-gray-50 pt-2">
-                <MiniInfo label="Rayon" value={detail?.rayon} />
+                <MiniInfo
+                  label="Rayon"
+                  value={
+                    detail?.kode_rayon && detail?.rayon
+                      ? `${detail.kode_rayon} - ${detail.rayon}`
+                      : detail?.kode_rayon || detail?.rayon || "-"
+                  }
+                />
                 <MiniInfo label="Wilayah" value={detail?.wilayah} />
-                <MiniInfo label="Kecamatan" value={detail?.kecamatan || detail?.kec} />
-                <MiniInfo label="Kelurahan" value={detail?.kelurahan || detail?.kel} />
+                <MiniInfo
+                  label="Kecamatan"
+                  value={detail?.kecamatan || detail?.kec}
+                />
+                <MiniInfo
+                  label="Kelurahan"
+                  value={detail?.kelurahan || detail?.kel}
+                />
               </div>
               <button
                 disabled={!detail?.latitude}
-                onClick={() => window.open(`http://googleusercontent.com/maps.google.com/${detail?.latitude},${detail?.longitude}`, "_blank")}
+                onClick={() =>
+                  window.open(
+                    `http://googleusercontent.com/maps.google.com/${detail?.latitude},${detail?.longitude}`,
+                    "_blank"
+                  )
+                }
                 className="mt-2 text-blue-600 font-black text-[10px] uppercase"
               >
                 Navigasi Maps
@@ -287,12 +335,20 @@ export default function DetailPelangganPage({
               <Phone size={22} />
             </div>
             <div className="flex-1">
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Kontak Pelanggan</p>
-              <p className="text-sm text-gray-800 font-bold">{detail?.no_hp || detail?.no_telp || "-"}</p>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                Kontak Pelanggan
+              </p>
+              <p className="text-sm text-gray-800 font-bold">
+                {detail?.no_hp || detail?.no_telp || "-"}
+              </p>
               <button
                 disabled={!detail?.no_hp}
                 onClick={() => {
-                  if (detail?.no_hp) window.location.href = `tel:${detail.no_hp.replace(/[^\d+]/g, "")}`;
+                  if (detail?.no_hp)
+                    window.location.href = `tel:${detail.no_hp.replace(
+                      /[^\d+]/g,
+                      ""
+                    )}`;
                 }}
                 className="mt-2 text-blue-600 font-black text-[10px] uppercase"
               >
@@ -302,49 +358,123 @@ export default function DetailPelangganPage({
           </div>
         </div>
 
-        {/* SECTION 5: DATA TEKNIS */}
         <div className="bg-white p-5 rounded-4xl shadow-sm border border-gray-100 space-y-4">
           <h3 className="font-bold text-gray-800 flex items-center gap-2 mb-2 text-sm">
             <ClipboardList size={18} className="text-blue-600" /> Detail Teknis
           </h3>
+
           <div className="grid grid-cols-2 gap-3">
-            <InfoBox label="Tanggal Tugas" value={detail?.tanggal || detail?.tglrab} icon={<Calendar size={14} />} />
-            <InfoBox label="Diameter Meter" value={detail?.diameter} icon={<Drill size={14} />} />
-            <InfoBox label="Jenis Bangunan" value={detail?.jenis_bangunan} icon={<Building2 size={14} />} />
-            <InfoBox label="Kepemilikan" value={detail?.kepemilikan} icon={<User size={14} />} />
+            <InfoBox
+              label="Tanggal Tugas"
+              value={detail?.tanggal || detail?.tglrab}
+              icon={<Calendar size={14} />}
+            />
+
+            {slug === "pasang-baru" && (
+              <>
+                <InfoBox
+                  label="Jenis Bangunan"
+                  value={detail?.jenis_bangunan}
+                  icon={<Building2 size={14} />}
+                />
+                <InfoBox
+                  label="Kepemilikan"
+                  value={detail?.kepemilikan}
+                  icon={<User size={14} />}
+                />
+              </>
+            )}
+
+            {(slug === "penyegelan" || slug === "buka-segel") && (
+              <InfoBox
+                label="Diameter Meter"
+                value={detail?.diameter}
+                icon={<Drill size={14} />}
+              />
+            )}
+
+            {slug === "pengaduan" && (
+              <>
+                <div className="col-span-2">
+                  <InfoBox
+                    label="Jenis Aduan"
+                    value={detail?.namajenis}
+                    icon={<Tag size={14} />}
+                  />
+                </div>
+                <div className="col-span-2">
+                  <InfoBox
+                    label="Keterangan Aduan"
+                    value={detail?.keterangan}
+                    icon={<ClipboardList size={14} />}
+                  />
+                </div>
+              </>
+            )}
+
+            {slug === "pelayanan-lain" && (
+              <>
+                <InfoBox
+                  label="Jenis"
+                  value={detail?.jenis}
+                  icon={<Tag size={14} />}
+                />
+                <InfoBox
+                  label="ID Non Air"
+                  value={detail?.jenis_nonair_id}
+                  icon={<Hash size={14} />}
+                />
+              </>
+            )}
           </div>
         </div>
 
-        {/* SECTION 6: RINCIAN BIAYA */}
-        <div className="bg-white p-5 rounded-4xl shadow-sm border border-gray-100">
-          <h3 className="font-bold text-gray-800 flex items-center gap-2 mb-4 text-sm">
-            <CreditCard size={18} className="text-blue-600" /> Rincian Biaya
-          </h3>
-          <div className="space-y-3">
-            {slug === "pasang-baru" && (
-              <>
-                <CostItem label="Biaya Peralatan" value={detail?.biaya_peralatan} />
-                <CostItem label="Biaya Survey" value={detail?.biaya_survey} />
-                <CostItem label="Biaya Jasa Lainnya" value={detail?.biaya_jl} />
-                <CostItem label="Biaya Lain-lain" value={detail?.biaya_lainnya} />
-                <CostItem label="Ongkos Pasang" value={detail?.biaya_ongkos} />
-                <CostItem label="Pajak (PPN)" value={detail?.ppn} />
-                <CostItem label="Diskon" value={detail?.diskon} isDiscount />
-              </>
-            )}
-            <div className="pt-4 border-t-2 border-dashed border-gray-100 mt-4 flex justify-between items-center">
-              <div>
-                <p className="text-[10px] font-black text-gray-400 uppercase">Total Tagihan</p>
-                <p className="text-xl font-black text-blue-600">
-                  {formatRupiah(detail?.total || detail?.biaya_bukasegel)}
-                </p>
+        {slug !== "pengaduan" && slug !== "pelayanan-lain" && (
+          <div className="bg-white p-5 rounded-4xl shadow-sm border border-gray-100">
+            <h3 className="font-bold text-gray-800 flex items-center gap-2 mb-4 text-sm">
+              <CreditCard size={18} className="text-blue-600" /> Rincian Biaya
+            </h3>
+            <div className="space-y-3">
+              {slug === "pasang-baru" && (
+                <>
+                  <CostItem
+                    label="Biaya Peralatan"
+                    value={detail?.biaya_peralatan}
+                  />
+                  <CostItem label="Biaya Survey" value={detail?.biaya_survey} />
+                  <CostItem
+                    label="Biaya Jasa Lainnya"
+                    value={detail?.biaya_jl}
+                  />
+                  <CostItem
+                    label="Biaya Lain-lain"
+                    value={detail?.biaya_lainnya}
+                  />
+                  <CostItem
+                    label="Ongkos Pasang"
+                    value={detail?.biaya_ongkos}
+                  />
+                  <CostItem label="Pajak (PPN)" value={detail?.ppn} />
+                  <CostItem label="Diskon" value={detail?.diskon} isDiscount />
+                </>
+              )}
+
+              <div className="pt-4 border-t-2 border-dashed border-gray-100 mt-4 flex justify-between items-center">
+                <div>
+                  <p className="text-[10px] font-black text-gray-400 uppercase">
+                    Total Tagihan
+                  </p>
+                  <p className="text-xl font-black text-blue-600">
+                    {formatRupiah(
+                      detail?.total || detail?.biaya_bukasegel || 0
+                    )}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
-
-      {/* TOMBOL AKSI */}
       {!isDone && (
         <div className="fixed bottom-6 left-0 right-0 px-6 max-w-125 mx-auto">
           <button
@@ -356,7 +486,6 @@ export default function DetailPelangganPage({
         </div>
       )}
 
-      {/* MODAL PREVIEW */}
       {isImgOpen && previewImg && (
         <div
           className="fixed inset-0 z-100 bg-black/95 flex items-center justify-center p-4"

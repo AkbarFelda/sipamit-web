@@ -35,6 +35,7 @@ export default function SelesaikanSPKPage({ params }: { params: Promise<{ id: st
   const [selectedJenisPenyelesaianId, setSelectedJenisPenyelesaianId] = useState("");
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
+  const localDate = new Date().toLocaleDateString('en-CA');
 
   useEffect(() => {
     const token = Cookies.get("user_token") || "";
@@ -112,6 +113,10 @@ export default function SelesaikanSPKPage({ params }: { params: Promise<{ id: st
       else if (slug === "penyegelan" || slug === "buka-segel") {
         formData.append("foto_proses", base64ToFile(capturedImage, "foto_proses.jpg"));
         if (slug === "buka-segel") formData.append("stan_meter", meterReading);
+      }
+      else if (slug === "pelayanan-lain") {
+        formData.append("tglproses", localDate);
+        formData.append("foto_proses", base64ToFile(capturedImage, "foto_proses.jpg"));
       }
 
       const canvas = sigCanvas.current?.getTrimmedCanvas();

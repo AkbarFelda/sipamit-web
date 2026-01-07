@@ -18,6 +18,14 @@ const SPK_CONFIG: Record<string, { endpoint: string; statusField: string }> = {
   "penyegelan": {
     endpoint: "penyegelan",
     statusField: "status"
+  },
+  "pemutusan": {
+    endpoint: "pemutusan-tagihan",
+    statusField: "flagproses"
+  },
+  "ganti-meter": {
+    endpoint: "pergantian-meter",
+    statusField: "flagproses"
   }
 };
 
@@ -71,7 +79,9 @@ export const spkService = {
       "pengaduan": "pengaduan",
       "pelayanan-lain": "pelayanan-lain",
       "penyegelan": "segel",
-      "buka-segel": "segel"
+      "buka-segel": "segel",
+      // "pemutusan": "pemutusan-tagihan",
+      // "ganti-meter": "pergantian-meter"
     };
 
     const actionMap: Record<string, string> = {
@@ -80,6 +90,8 @@ export const spkService = {
       "pelayanan-lain": "proses",
       "penyegelan": "penyegelan",
       "buka-segel": "proses",
+      // "pemutusan": "proses",
+      // "ganti-meter": "proses"
     };
 
     const endpoint = endpointMap[slug] || slug;

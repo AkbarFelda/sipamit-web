@@ -105,7 +105,7 @@ export default function DetailPelangganPage({
 
   return (
     <MobileContainer className="bg-gray-50 flex flex-col min-h-screen pb-32 text-black">
-      <HeaderPage title={`Detail ${slug.replace(/-/g, " ").toWellFormed()}`} />
+      <HeaderPage fallbackPath={`/spk/${slug}`} title={`Detail ${slug.replace(/-/g, " ").toWellFormed()}`} />
 
       <div className="p-6 space-y-6">
         <div className="bg-white p-6 rounded-4xl shadow-sm border border-gray-100 flex flex-col items-center text-center">

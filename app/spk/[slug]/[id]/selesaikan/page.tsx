@@ -13,7 +13,7 @@ import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import { spkService } from "@/core/services/spkService";
 import { MerekMeter } from "@/core/types/merekmeter";
-import SuccessPopup from "@/presentation/components/SuccessPopup"; // Import Popup
+import SuccessPopup from "@/presentation/components/SuccessPopup"; 
 
 interface JenisPenyelesaian {
   id: number;
@@ -25,7 +25,7 @@ export default function SelesaikanSPKPage({ params }: { params: Promise<{ id: st
   const router = useRouter();
   const sigCanvas = useRef<SignatureCanvas>(null);
   const [loading, setLoading] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false); // State untuk Popup
+  const [showSuccess, setShowSuccess] = useState(false);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [meterReading, setMeterReading] = useState("");
   const [keterangan, setKeterangan] = useState("");

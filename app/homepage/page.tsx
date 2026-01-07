@@ -7,7 +7,7 @@ import { User, LogOut, Lock, Unlock, X } from "lucide-react";
 
 import MenuCard from "@/presentation/components/HomePage/MenuCard";
 import MobileContainer from "@/presentation/components/MobileContainer";
-import LoadingOverlay from "@/presentation/components/LoadingOverlay"; // Import LoadingOverlay
+import LoadingOverlay from "@/presentation/components/LoadingOverlay";
 import { useGreeting } from "@/presentation/hooks/useGreeting";
 import { useAuth } from "@/presentation/hooks/useAuth";
 import { spkService } from "@/core/services/spkService";
@@ -16,16 +16,20 @@ export default function HomePage() {
   const router = useRouter();
   const greeting = useGreeting();
   const { logout } = useAuth();
-  
+
   const [isSealingModalOpen, setIsSealingModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true); // State loading awal true
+  const [isLoading, setIsLoading] = useState(true);
   const token = Cookies.get("user_token") || "";
-  
+
+  // State Stats Lengkap
   const [stats, setStats] = useState({
     pasangBaru: 0,
     pelayananLain: 0,
     pengaduan: 0,
     penyegelan: 0,
+    bukaSegel: 0,
+    pemutusanTagihan: 0,
+    gantiMeter: 0,
   });
 
   const [userName] = useState(() => {
@@ -39,26 +43,25 @@ export default function HomePage() {
         setIsLoading(false);
         return;
       }
-      
-      try {
-        setIsLoading(true); // Pastikan loading aktif saat mulai fetch
-        const [psb, aduan, nonAir, segel] = await Promise.all([
-          spkService.getList("pasang-baru", 0, token),
-          spkService.getList("pengaduan", 0, token),
-          spkService.getList("pelayanan-lain", 0, token),
-          spkService.getList("penyegelan", 0, token),
-        ]);
 
+      try {
+        setIsLoading(true);
+        // Menggunakan satu endpoint untuk semua statistik (Lebih Efisien)
+        const data = await spkService.getStatHome(token);
+        
         setStats({
-          pasangBaru: Array.isArray(psb) ? psb.length : 0,
-          pengaduan: Array.isArray(aduan) ? aduan.length : 0,
-          pelayananLain: Array.isArray(nonAir) ? nonAir.length : 0,
-          penyegelan: Array.isArray(segel) ? segel.length : 0,
+          pasangBaru: data.psb?.todo || 0,
+          pelayananLain: data.pelayanan_lain?.todo || 0,
+          pengaduan: data.pengaduan?.todo || 0,
+          penyegelan: data.penyegelan?.todo || 0,
+          bukaSegel: data.buka_segel?.todo || 0,
+          pemutusanTagihan: data.pemutusan_tagihan?.todo || 0,
+          gantiMeter: data.pergantian_meter?.todo || 0,
         });
       } catch (error) {
         console.error("Error fetching stats:", error);
       } finally {
-        setIsLoading(false); // Matikan loading setelah selesai (berhasil/gagal)
+        setIsLoading(false);
       }
     };
 
@@ -75,11 +78,9 @@ export default function HomePage() {
 
   return (
     <MobileContainer className="bg-linear-to-b from-blue-50 to-white p-6 flex flex-col min-h-screen relative text-black">
-      
-      {/* Tampilkan Loading Overlay jika isLoading true */}
       {isLoading && <LoadingOverlay message="Mohon menunggu" />}
 
-      {/* HEADER SECTION */}
+      {/* Header Section */}
       <div className="flex justify-between items-center mb-8">
         <div className="flex items-center gap-4">
           <button
@@ -107,18 +108,17 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* INFO CARD */}
+      {/* Info Banner */}
       <div className="bg-white/30 backdrop-blur-md p-4 rounded-2xl mb-8 border border-white/20">
         <p className="text-xs font-bold text-blue-800 uppercase tracking-wider mb-1">
           Informasi
         </p>
         <h2 className="text-sm font-semibold text-gray-800 leading-relaxed">
-          Selamat Datang di Aplikasi Teknik SIPAMIT. Silahkan pilih tugas Anda
-          hari ini.
+          Selamat Datang di Aplikasi Teknik SIPAMIT. Silahkan pilih tugas Anda hari ini.
         </h2>
       </div>
 
-      {/* MENU GRID */}
+      {/* Menu Grid */}
       <div className="grid grid-cols-2 gap-4 mb-10">
         <MenuCard
           icon={User}
@@ -141,28 +141,43 @@ export default function HomePage() {
           onClick={() => router.push(`/spk/pengaduan`)}
           disabled={isLoading}
         />
-        <MenuCard
-          icon={User}
-          label={"SPK Penyegelan"}
-          count={stats.penyegelan}
-          onClick={() => setIsSealingModalOpen(true)}
-          disabled={isLoading}
-        />
+
+        {/* <div className="relative group">
+          {stats.penyegelan > 0 && (
+            <div className="absolute -top-1 -left-1 z-20 bg-orange-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-md border-2 border-white pointer-events-none">
+              {stats.penyegelan}
+            </div>
+          )}
+          {stats.bukaSegel > 0 && (
+            <div className="absolute -top-1 -right-1 z-20 bg-green-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-md border-2 border-white pointer-events-none">
+              {stats.bukaSegel}
+            </div>
+          )} */}
+          <MenuCard
+            icon={User}
+            label={"SPK Penyegelan"}
+            count={stats.penyegelan + stats.bukaSegel} 
+            onClick={() => setIsSealingModalOpen(true)}
+            disabled={isLoading}
+          />
+        {/* </div> */}
+
         <MenuCard
           icon={User}
           label={"SPK Ganti Meter"}
-          disabled={true}
-          badge="Akan Hadir"
+          disabled={isLoading}
+          count={stats.gantiMeter}
+          onClick={() => router.push(`/spk/ganti-meter`)}
         />
         <MenuCard
           icon={User}
           label={"SPK Pemutusan"}
-          disabled={true}
-          badge="Akan Hadir"
+          disabled={isLoading}
+          count={stats.pemutusanTagihan}
+          onClick={() => router.push(`/spk/pemutusan`)}
         />
       </div>
 
-      {/* MODAL PENYEGELAN */}
       {isSealingModalOpen && (
         <div
           className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end justify-center transition-all duration-300"
@@ -175,36 +190,39 @@ export default function HomePage() {
             <div className="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-8" />
 
             <div className="text-center mb-8">
-              <h3 className="text-xl font-black text-gray-800 mb-2">
-                Jenis Operasional
-              </h3>
-              <p className="text-sm text-gray-500 font-medium">
-                Silahkan pilih jenis tugas penyegelan
-              </p>
+              <h3 className="text-xl font-black text-gray-800 mb-2">Jenis Operasional</h3>
+              <p className="text-sm text-gray-500 font-medium">Silahkan pilih jenis tugas penyegelan</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <button
                 onClick={() => router.push("/spk/penyegelan")}
-                className="flex flex-col items-center justify-center p-6 bg-orange-50 rounded-4xl border border-orange-100 active:scale-95 transition-all group"
+                className="relative flex flex-col items-center justify-center p-6 bg-orange-50 rounded-4xl border border-orange-100 active:scale-95 transition-all group"
               >
+                {stats.penyegelan > 0 && (
+                  <span className="absolute top-3 right-3 bg-orange-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg border-2 border-white animate-in zoom-in duration-300">
+                    {stats.penyegelan}
+                  </span>
+                )}
                 <div className="bg-orange-500 text-white p-4 rounded-2xl mb-4 shadow-lg shadow-orange-200 group-hover:rotate-12 transition-transform">
                   <Lock size={28} />
                 </div>
-                <span className="text-sm font-black text-orange-900">
-                  Penyegelan
-                </span>
+                <span className="text-sm font-black text-orange-900">Penyegelan</span>
               </button>
+
               <button
                 onClick={() => router.push("/spk/buka-segel")}
-                className="flex flex-col items-center justify-center p-6 bg-green-50 rounded-4xl border border-green-100 active:scale-95 transition-all group"
+                className="relative flex flex-col items-center justify-center p-6 bg-green-50 rounded-4xl border border-green-100 active:scale-95 transition-all group"
               >
+                {stats.bukaSegel > 0 && (
+                  <span className="absolute top-3 right-3 bg-green-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg border-2 border-white animate-in zoom-in duration-300">
+                    {stats.bukaSegel}
+                  </span>
+                )}
                 <div className="bg-green-500 text-white p-4 rounded-2xl mb-4 shadow-lg shadow-green-200 group-hover:-rotate-12 transition-transform">
                   <Unlock size={28} />
                 </div>
-                <span className="text-sm font-black text-green-900">
-                  Buka Segel
-                </span>
+                <span className="text-sm font-black text-green-900">Buka Segel</span>
               </button>
             </div>
 

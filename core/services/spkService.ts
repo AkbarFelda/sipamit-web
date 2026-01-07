@@ -132,5 +132,22 @@ export const spkService = {
     if (!result.status && !result.success) throw new Error("Gagal mengambil data jenis penyelesaian");
 
     return result.data;
-  }
+  },
+
+  getStatHome: async (token: string) => {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL;
+    const url = `${API_URL}/api/mobile/spk/home`;
+    const res = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      }
+    });
+
+    const result = await res.json();
+    if (!result.status && !result.success) throw new Error("Gagal mengambil data statistik home");
+
+    return result.data;
+  } 
 };

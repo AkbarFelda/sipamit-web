@@ -1,3 +1,5 @@
+import { FilterResponse, Wilayah } from "../types/filter";
+
 const SPK_CONFIG: Record<string, { endpoint: string; statusField: string }> = {
   "pasang-baru": {
     endpoint: "psb",
@@ -48,7 +50,6 @@ export const spkService = {
     const result = await res.json();
     const isSuccess = result.success || result.status;
     if (!isSuccess) throw new Error(result.message || "Gagal mengambil daftar");
-
     return result.data;
   },
 
@@ -80,8 +81,8 @@ export const spkService = {
       "pelayanan-lain": "pelayanan-lain",
       "penyegelan": "segel",
       "buka-segel": "segel",
-      // "pemutusan": "pemutusan-tagihan",
-      // "ganti-meter": "pergantian-meter"
+      "pemutusan": "pemutusan-tagihan",
+      "ganti-meter": "pergantian-meter"
     };
 
     const actionMap: Record<string, string> = {
@@ -90,8 +91,8 @@ export const spkService = {
       "pelayanan-lain": "proses",
       "penyegelan": "penyegelan",
       "buka-segel": "proses",
-      // "pemutusan": "proses",
-      // "ganti-meter": "proses"
+      "pemutusan": "proses",
+      "ganti-meter": "proses"
     };
 
     const endpoint = endpointMap[slug] || slug;
@@ -110,7 +111,6 @@ export const spkService = {
     const isSuccess = result.success || result.status;
 
     if (!isSuccess) throw new Error(result.message || "Gagal memproses data");
-
     return result;
   },
 
@@ -126,7 +126,6 @@ export const spkService = {
 
     const result = await res.json();
     if (!result.status && !result.success) throw new Error("Gagal mengambil data merek");
-
     return result.data;
   },
 
@@ -142,7 +141,6 @@ export const spkService = {
 
     const result = await res.json();
     if (!result.status && !result.success) throw new Error("Gagal mengambil data jenis penyelesaian");
-
     return result.data;
   },
 
@@ -159,7 +157,21 @@ export const spkService = {
 
     const result = await res.json();
     if (!result.status && !result.success) throw new Error("Gagal mengambil data statistik home");
-
     return result.data;
-  } 
+  },
+
+  getWilayah: async (token: string): Promise<Wilayah[]> => {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/filter/filter-umum?type=wilayah`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) throw new Error("Gagal mengambil data wilayah");
+    
+    const result: FilterResponse = await response.json();
+    return result.data;
+  },
 };

@@ -24,6 +24,8 @@ export function useAuth() {
     try {
       const data = await authService.login(payload);
       Cookies.set("user_token", data.token);
+      Cookies.set("wilayah_id", (data.user.wilayah_id));
+      Cookies.set("role", data.user.role)
       Cookies.set("user_name", data.user.nama);
       router.replace("/homepage");
     } catch (err) {

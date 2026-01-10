@@ -1,19 +1,23 @@
 "use client";
 
+import { useState, useRef, use, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import Cookies from "js-cookie";
+import SignatureCanvas from "react-signature-canvas";
+import { 
+  Camera, Hash, PenTool, Trash2, CheckCircle, 
+  Boxes, ClipboardEdit, ClipboardCheck 
+} from "lucide-react";
 import MobileContainer from "@/presentation/components/MobileContainer";
 import HeaderPage from "@/presentation/components/HeaderPage";
-import { useState, useRef, use, useEffect } from "react";
-import { Camera, Hash, PenTool, Trash2, CheckCircle, Boxes, ClipboardEdit, ClipboardCheck } from "lucide-react";
 import CameraView from "@/presentation/components/CameraView";
 import ImagePickerSource from "@/presentation/components/ImagePickerSource";
 import LoadingOverlay from "@/presentation/components/LoadingOverlay";
-import SignatureCanvas from "react-signature-canvas";
-import Image from "next/image";
-import Cookies from "js-cookie";
-import { useRouter } from "next/navigation";
+import SuccessPopup from "@/presentation/components/SuccessPopup";
+import { resizeBase64, base64ToFile } from "@/core/utils/imageHelper";
 import { spkService } from "@/core/services/spkService";
 import { MerekMeter } from "@/core/types/merekmeter";
-import SuccessPopup from "@/presentation/components/SuccessPopup"; 
 
 interface JenisPenyelesaian {
   id: number;
@@ -39,6 +43,7 @@ export default function SelesaikanSPKPage({ params }: { params: Promise<{ id: st
 
   useEffect(() => {
     const token = Cookies.get("user_token") || "";
+    
     if (slug === "pasang-baru") {
       const fetchMerek = async () => {
         try {
@@ -64,31 +69,6 @@ export default function SelesaikanSPKPage({ params }: { params: Promise<{ id: st
     }
   }, [slug]);
 
-  const base64ToFile = (base64: string, filename: string) => {
-    const arr = base64.split(",");
-    const mimeMatch = arr[0].match(/:(.*?);/);
-    const mime = mimeMatch ? mimeMatch[1] : "image/png";
-    const bstr = atob(arr[1]);
-    let n = bstr.length;
-    const u8arr = new Uint8Array(n);
-    while (n--) u8arr[n] = bstr.charCodeAt(n);
-    return new File([u8arr], filename, { type: mime });
-  };
-
-  const compressImage = (base64Str: string): Promise<string> => {
-    return new Promise((resolve) => {
-      const img = new window.Image();
-      img.src = base64Str;
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
-        canvas.width = 800; canvas.height = 600;
-        ctx?.drawImage(img, 0, 0, 800, 600);
-        resolve(canvas.toDataURL("image/jpeg", 0.6));
-      };
-    });
-  };
-
   const handleFinish = async () => {
     if (!capturedImage || sigCanvas.current?.isEmpty()) {
       alert("Harap lengkapi Foto Bukti dan Tanda Tangan!");
@@ -99,7 +79,10 @@ export default function SelesaikanSPKPage({ params }: { params: Promise<{ id: st
       setLoading(true);
       const token = Cookies.get("user_token") || "";
       const formData = new FormData();
+      
       formData.append("id", id);
+
+      // Logic Append berdasarkan Slug
       if (slug === "pasang-baru") {
         formData.append("merek_id", selectedMerekId);
         formData.append("nometer", meterReading);
@@ -114,19 +97,38 @@ export default function SelesaikanSPKPage({ params }: { params: Promise<{ id: st
         formData.append("foto_proses", base64ToFile(capturedImage, "foto_proses.jpg"));
         if (slug === "buka-segel") formData.append("stan_meter", meterReading);
       }
-      else if (slug === "pelayanan-lain") {
-        formData.append("tglproses", localDate);
+      else if (slug === "pelayanan-lain" || slug === "pemutusan") {
+        if (slug === "pelayanan-lain") formData.append("tglproses", localDate);
         formData.append("foto_proses", base64ToFile(capturedImage, "foto_proses.jpg"));
       }
+      else if (slug === "ganti-meter") {
+        formData.append("foto_proses", base64ToFile(capturedImage, "foto_proses.jpg"));
+        formData.append("stanangkat", meterReading); // Pastikan tidak ada spasi di key
+      }
 
+      // HANDLE TANDA TANGAN (FIX HITAM: Tambah Background Putih)
       const canvas = sigCanvas.current?.getTrimmedCanvas();
       if (canvas) {
-        formData.append("foto_ttd", base64ToFile(canvas.toDataURL("image/jpg"), "foto_ttd.jpg"));
+        const compositeCanvas = document.createElement("canvas");
+        compositeCanvas.width = canvas.width;
+        compositeCanvas.height = canvas.height;
+        const ctx = compositeCanvas.getContext("2d");
+
+        if (ctx) {
+          ctx.fillStyle = "#ffffff"; // Beri background putih
+          ctx.fillRect(0, 0, compositeCanvas.width, compositeCanvas.height);
+          ctx.drawImage(canvas, 0, 0); // Gambar TTD di atas putih
+
+          const ttdBase64 = compositeCanvas.toDataURL("image/jpeg", 0.7);
+          formData.append("foto_ttd", base64ToFile(ttdBase64, "foto_ttd.jpg"));
+        }
       }
 
       await spkService.submitProses(slug, formData, token);
+      
       setLoading(false);
       setShowSuccess(true);
+      
       setTimeout(() => {
         router.push(`/spk/${slug}`);
       }, 2000);
@@ -142,8 +144,11 @@ export default function SelesaikanSPKPage({ params }: { params: Promise<{ id: st
     <MobileContainer className="bg-gray-50 flex flex-col min-h-screen pb-10 text-black">
       {loading && !showSuccess && <LoadingOverlay message="Sedang memproses laporan..." />}
       {showSuccess && <SuccessPopup message="Laporan tugas Anda telah berhasil terkirim ke sistem." />}
-      <HeaderPage fallbackPath={`/spk/${slug}`} title={`Selesaikan ${slug.replace("-", " ").toWellFormed()}`} />
+      
+      <HeaderPage fallbackPath={`/spk/${slug}`} title={`Selesaikan ${slug.replace("-", " ").toUpperCase()}`} />
+      
       <div className="p-6 space-y-6">
+        {/* Dropdown Merek (Pasang Baru) */}
         {slug === "pasang-baru" && (
           <div className="bg-white p-5 rounded-4xl shadow-sm border border-gray-100">
             <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2 text-sm">
@@ -152,7 +157,7 @@ export default function SelesaikanSPKPage({ params }: { params: Promise<{ id: st
             <select
               value={selectedMerekId}
               onChange={(e) => setSelectedMerekId(e.target.value)}
-              className="w-full p-4 bg-gray-50 rounded-2xl font-bold text-sm text-black outline-none appearance-none"
+              className="w-full p-4 bg-gray-50 rounded-2xl font-bold text-sm text-black outline-none"
             >
               {listMerek.map((m) => (
                 <option key={m.id} value={m.id}>{m.nama.trim()}</option>
@@ -161,38 +166,39 @@ export default function SelesaikanSPKPage({ params }: { params: Promise<{ id: st
           </div>
         )}
 
+        {/* Form Pengaduan */}
         {slug === "pengaduan" && (
-          <div className="bg-white p-5 rounded-4xl shadow-sm border border-gray-100">
-            <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2 text-sm">
-              <ClipboardCheck size={18} className="text-blue-600" /> Pilih Jenis Penyelesaian
-            </h3>
-            <select
-              value={selectedJenisPenyelesaianId}
-              onChange={(e) => setSelectedJenisPenyelesaianId(e.target.value)}
-              className="w-full p-4 bg-gray-50 rounded-2xl font-bold text-sm text-black outline-none appearance-none"
-            >
-              <option value="" disabled>-- Pilih Jenis --</option>
-              {listJenisPenyelesaian.map((jp) => (
-                <option key={jp.id} value={jp.id}>{jp.nama_penyelesaian?.trim() || ""}</option>
-              ))}
-            </select>
-          </div>
+          <>
+            <div className="bg-white p-5 rounded-4xl shadow-sm border border-gray-100">
+              <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2 text-sm">
+                <ClipboardCheck size={18} className="text-blue-600" /> Pilih Jenis Penyelesaian
+              </h3>
+              <select
+                value={selectedJenisPenyelesaianId}
+                onChange={(e) => setSelectedJenisPenyelesaianId(e.target.value)}
+                className="w-full p-4 bg-gray-50 rounded-2xl font-bold text-sm text-black outline-none"
+              >
+                <option value="" disabled>-- Pilih Jenis --</option>
+                {listJenisPenyelesaian.map((jp) => (
+                  <option key={jp.id} value={jp.id}>{jp.nama_penyelesaian?.trim() || ""}</option>
+                ))}
+              </select>
+            </div>
+            <div className="bg-white p-5 rounded-4xl shadow-sm border border-gray-100">
+              <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2 text-sm">
+                <ClipboardEdit size={18} className="text-blue-600" /> Keterangan Tambahan
+              </h3>
+              <textarea
+                className="w-full p-4 bg-gray-50 rounded-2xl text-sm outline-none min-h-24 text-black"
+                placeholder="Masukkan detail pekerjaan..."
+                value={keterangan}
+                onChange={(e) => setKeterangan(e.target.value)}
+              />
+            </div>
+          </>
         )}
 
-        {slug === "pengaduan" && (
-          <div className="bg-white p-5 rounded-4xl shadow-sm border border-gray-100">
-            <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2 text-sm">
-              <ClipboardEdit size={18} className="text-blue-600" /> Keterangan Tambahan
-            </h3>
-            <textarea
-              className="w-full p-4 bg-gray-50 rounded-2xl text-sm outline-none min-h-24 text-black"
-              placeholder="Masukkan detail pekerjaan..."
-              value={keterangan}
-              onChange={(e) => setKeterangan(e.target.value)}
-            />
-          </div>
-        )}
-
+        {/* Ambil Foto (Semua Slug) */}
         <div className="bg-white p-5 rounded-4xl shadow-sm border border-gray-100">
           <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2 text-sm">
             <Camera size={18} className="text-blue-600" /> 
@@ -200,22 +206,38 @@ export default function SelesaikanSPKPage({ params }: { params: Promise<{ id: st
           </h3>
           {capturedImage ? (
             <div className="relative group">
-              <Image src={capturedImage} alt="Bukti" width={400} height={300} unoptimized className="rounded-2xl w-full h-48 object-cover shadow-inner" />
-              <button onClick={() => setCapturedImage(null)} className="absolute top-3 right-3 bg-red-500 text-white p-2 rounded-full shadow-lg"><Trash2 size={16} /></button>
+              <Image 
+                src={capturedImage} 
+                alt="Bukti" 
+                width={400} 
+                height={300} 
+                unoptimized 
+                className="rounded-2xl w-full h-48 object-cover shadow-inner" 
+              />
+              <button 
+                onClick={() => setCapturedImage(null)} 
+                className="absolute top-3 right-3 bg-red-500 text-white p-2 rounded-full shadow-lg"
+              >
+                <Trash2 size={16} />
+              </button>
             </div>
           ) : (
-            <button onClick={() => setIsPickerOpen(true)} className="w-full h-40 border-2 border-dashed border-gray-200 rounded-3xl flex flex-col items-center justify-center text-gray-400 gap-2 bg-gray-50 active:bg-gray-100 transition-colors">
+            <button 
+              onClick={() => setIsPickerOpen(true)} 
+              className="w-full h-40 border-2 border-dashed border-gray-200 rounded-3xl flex flex-col items-center justify-center text-gray-400 gap-2 bg-gray-50 active:bg-gray-100 transition-colors"
+            >
               <Camera size={28} />
               <p className="text-xs font-bold uppercase tracking-tighter">Ambil Foto Bukti</p>
             </button>
           )}
         </div>
 
-        {(slug === "pasang-baru" || slug === "buka-segel") && (
+        {/* Input Angka (PSB, Buka Segel, Ganti Meter) */}
+        {(slug === "pasang-baru" || slug === "buka-segel" || slug === "ganti-meter") && (
           <div className="bg-white p-5 rounded-4xl shadow-sm border border-gray-100">
             <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2 text-sm">
               <Hash size={18} className="text-blue-600" /> 
-              {slug === "pasang-baru" ? "Nomor Meter Baru" : "Angka Stan Meter"}
+              {slug === "ganti-meter" ? "Angka Stan Angkat (Meter Lama)" : slug === "pasang-baru" ? "Nomor Meter Baru" : "Angka Stan Meter"}
             </h3>
             <input
               type="number"
@@ -227,6 +249,7 @@ export default function SelesaikanSPKPage({ params }: { params: Promise<{ id: st
           </div>
         )}
 
+        {/* Tanda Tangan */}
         <div className="bg-white p-5 rounded-4xl shadow-sm border border-gray-100">
           <div className="flex justify-between items-center mb-4">
             <h3 className="font-bold text-gray-800 flex items-center gap-2 text-sm">
@@ -235,7 +258,11 @@ export default function SelesaikanSPKPage({ params }: { params: Promise<{ id: st
             <button onClick={() => sigCanvas.current?.clear()} className="text-[10px] text-red-500 font-black uppercase border-b border-red-500">Hapus</button>
           </div>
           <div className="border border-gray-100 rounded-2xl bg-gray-50 overflow-hidden shadow-inner">
-            <SignatureCanvas ref={sigCanvas} penColor="black" canvasProps={{ className: "w-full h-40 cursor-crosshair" }} />
+            <SignatureCanvas 
+              ref={sigCanvas} 
+              penColor="black" 
+              canvasProps={{ className: "w-full h-40 cursor-crosshair" }} 
+            />
           </div>
         </div>
 
@@ -248,6 +275,7 @@ export default function SelesaikanSPKPage({ params }: { params: Promise<{ id: st
         </button>
       </div>
 
+      {/* Picker & Kamera Modals */}
       {isPickerOpen && (
         <ImagePickerSource
           onClose={() => setIsPickerOpen(false)}
@@ -256,7 +284,10 @@ export default function SelesaikanSPKPage({ params }: { params: Promise<{ id: st
             const file = e.target.files?.[0];
             if (file) {
               const reader = new FileReader();
-              reader.onload = async () => setCapturedImage(await compressImage(reader.result as string));
+              reader.onload = async () => {
+                const resized = await resizeBase64(reader.result as string);
+                setCapturedImage(resized);
+              };
               reader.readAsDataURL(file);
               setIsPickerOpen(false);
             }
@@ -267,7 +298,8 @@ export default function SelesaikanSPKPage({ params }: { params: Promise<{ id: st
       {showCamera && (
         <CameraView
           onCapture={async (src) => {
-            setCapturedImage(await compressImage(src));
+            const resized = await resizeBase64(src);
+            setCapturedImage(resized);
             setShowCamera(false);
           }}
           onClose={() => setShowCamera(false)}

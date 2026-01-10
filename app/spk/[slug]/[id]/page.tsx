@@ -22,6 +22,8 @@ import {
   Hash,
   Boxes,
   Tag,
+  House,
+  Diameter,
 } from "lucide-react";
 import Image from "next/image";
 import { useSPKDetail } from "@/presentation/hooks/useSPKDetail";
@@ -64,6 +66,10 @@ export default function DetailPelangganPage({
       case "buka-segel":
         return checkValue(detail.flagbukasegel);
       case "pelayanan-lain":
+        return checkValue(detail.flagproses);
+      case "pemutusan":
+        return checkValue(detail.flagproses);
+      case "ganti-meter":
         return checkValue(detail.flagproses);
       default:
         return false;
@@ -285,6 +291,43 @@ export default function DetailPelangganPage({
           </div>
         )}
 
+        {/* LAMPIRAN KHUSUS GANTI METER (FOTO METER LAMA & BARU) */}
+        {slug === "ganti-meter" && (
+          <div className="bg-white p-5 rounded-4xl shadow-sm border border-gray-100">
+            <h3 className="font-bold text-gray-800 flex items-center gap-2 mb-3 text-sm">
+              <ImageIcon size={18} className="text-blue-600" /> Foto Lampiran Meter
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <p className="text-[10px] font-black text-gray-400 uppercase text-center">Meter Lama</p>
+                <div 
+                  className="relative w-full h-32 rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 cursor-pointer shadow-inner"
+                  onClick={() => handlePreview(detail?.url_foto_meter)}
+                >
+                  {detail?.url_foto_meter ? (
+                    <Image src={getImageUrl(detail.url_foto_meter)} alt="Meter Lama" fill className="object-cover" unoptimized />
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-gray-300"><ImageIcon size={20} /></div>
+                  )}
+                </div>
+              </div>
+              <div className="space-y-2">
+                <p className="text-[10px] font-black text-gray-400 uppercase text-center">Meter Baru</p>
+                <div 
+                  className="relative w-full h-32 rounded-2xl overflow-hidden border border-gray-100 bg-gray-50 cursor-pointer shadow-inner"
+                  onClick={() => handlePreview(detail?.url_foto_meter_baru)}
+                >
+                  {detail?.url_foto_meter_baru ? (
+                    <Image src={getImageUrl(detail.url_foto_meter_baru)} alt="Meter Baru" fill className="object-cover" unoptimized />
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-gray-300"><ImageIcon size={20} /></div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="bg-white p-5 rounded-4xl shadow-sm border border-gray-100 space-y-5">
           <div className="flex items-start gap-4">
             <div className="bg-green-50 p-3 rounded-2xl text-green-600">
@@ -426,10 +469,29 @@ export default function DetailPelangganPage({
                 />
               </>
             )}
+
+            {slug === "pemutusan" && (
+              <>
+                <InfoBox label="Tanggal Proses" value={detail?.tglrealisasi || "-"} icon={<Calendar size={14} />} />
+                <InfoBox label="No. Penugasan" value={detail?.no_penugasan} icon={<Hash size={14} />} />
+                <InfoBox label="Petugas" value={detail?.petugas_nama || detail?.timtagih} icon={<User size={14} />} />
+                <InfoBox label="Merek Meter" value={detail?.merek_meter} icon={<Boxes size={14} />} />
+              </> 
+            )}
+
+            {slug === "ganti-meter" && (
+                <>
+                  <InfoBox label="Golongan" value={detail?.golongan} icon={<House size={14} />} />
+                  <InfoBox label="Diameter" value={detail?.diameter} icon={<Diameter size={14} />} />
+                  <InfoBox label="Merek Meter" value={detail?.merek_meter} icon={<Boxes size={14} />} />
+                  <InfoBox label="Stan Angkat" value={detail?.stanangkat} icon={undefined} />
+
+                </>
+              )}
           </div>
         </div>
 
-        {slug !== "pengaduan" && slug !== "pelayanan-lain" && (
+        {slug !== "pengaduan" && slug !== "pelayanan-lain" && slug !== "ganti-meter" && (
           <div className="bg-white p-5 rounded-4xl shadow-sm border border-gray-100">
             <h3 className="font-bold text-gray-800 flex items-center gap-2 mb-4 text-sm">
               <CreditCard size={18} className="text-blue-600" /> Rincian Biaya
@@ -459,6 +521,14 @@ export default function DetailPelangganPage({
                 </>
               )}
 
+              {slug === "pemutusan" && (
+                <>
+                  <InfoBox label="Periode Tagihan" value={detail?.periodetag} icon={undefined} />
+                  <CostItem label="Rekening Air" value={detail?.rekair} />
+                  <CostItem label="Denda" value={detail?.denda} />
+                </>
+              )}
+              
               <div className="pt-4 border-t-2 border-dashed border-gray-100 mt-4 flex justify-between items-center">
                 <div>
                   <p className="text-[10px] font-black text-gray-400 uppercase">
@@ -466,7 +536,7 @@ export default function DetailPelangganPage({
                   </p>
                   <p className="text-xl font-black text-blue-600">
                     {formatRupiah(
-                      detail?.total || detail?.biaya_bukasegel || 0
+                      detail?.total || detail?.biaya_bukasegel || detail?.total_tagihan ||0
                     )}
                   </p>
                 </div>

@@ -57,4 +57,21 @@ export interface GenericSPKDetail {
   url_foto_buka?: string | null;     
   url_foto_ttd_proses?: string | null; 
   url_foto_ttd_buka?: string | null;
+  tglrealisasi?: string | null;
+  kodegol?: string;
+  golongan?: string;
+  periodetag?: number;
+  rekair?: number;
+  denda?: number;
+  total_tagihan?: number;
+  no_penugasan?: string;
+  petugas_nama?: string;
+  timtagih?: string;
+  stanangkat?: string | number | null;
+  kelainan?: string | null;
+  url_foto_meter?: string | null;
+  url_foto_meter_baru?: string | null;
+  periode_bk_segel?: string | null;
+  periode_segel?: string | null;
+  periode_proses?: string | null;
 }

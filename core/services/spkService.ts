@@ -1,43 +1,22 @@
 import { FilterResponse, Wilayah } from "../types/filter";
 
-const SPK_CONFIG: Record<string, { endpoint: string; statusField: string }> = {
-  "pasang-baru": {
-    endpoint: "psb",
-    statusField: "flagsudahpasang"
-  },
-  "pengaduan": {
-    endpoint: "pengaduan",
-    statusField: "is_complete"
-  },
-  "pelayanan-lain": {
-    endpoint: "pelayanan-lain",
-    statusField: "flagproses"
-  },
-  "buka-segel": {
-    endpoint: "buka-segel",
-    statusField: "status"
-  },
-  "penyegelan": {
-    endpoint: "penyegelan",
-    statusField: "status"
-  },
-  "pemutusan": {
-    endpoint: "pemutusan-tagihan",
-    statusField: "flagproses"
-  },
-  "ganti-meter": {
-    endpoint: "pergantian-meter",
-    statusField: "flagproses"
-  }
+export const SPK_CONFIG: Record<string, { endpoint: string; statusField: string }> = {
+  "pasang-baru": { endpoint: "psb", statusField: "flagsudahpasang" },
+  "pengaduan": { endpoint: "pengaduan", statusField: "is_complete" },
+  "pelayanan-lain": { endpoint: "pelayanan-lain", statusField: "flagproses" },
+  "buka-segel": { endpoint: "buka-segel", statusField: "status" },
+  "penyegelan": { endpoint: "penyegelan", statusField: "status" },
+  "pemutusan": { endpoint: "pemutusan-tagihan", statusField: "flagproses" },
+  "ganti-meter": { endpoint: "pergantian-meter", statusField: "flagproses" }
 };
 
 export const spkService = {
-  getList: async (slug: string, status: number, token: string) => {
+  getList: async (slug: string, status: number, token: string, page: number = 1) => {
     const config = SPK_CONFIG[slug];
     if (!config) throw new Error("Kategori tidak valid");
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
-    const url = `${API_URL}/api/mobile/spk/${config.endpoint}?${config.statusField}=${status}`;
+    const url = `${API_URL}/api/mobile/spk/${config.endpoint}?${config.statusField}=${status}&page=${page}&limit=10`;
 
     const res = await fetch(url, {
       method: "GET",
@@ -50,7 +29,8 @@ export const spkService = {
     const result = await res.json();
     const isSuccess = result.success || result.status;
     if (!isSuccess) throw new Error(result.message || "Gagal mengambil daftar");
-    return result.data;
+    
+    return result.data || [];
   },
 
   getDetail: async (slug: string, id: string, token: string) => {

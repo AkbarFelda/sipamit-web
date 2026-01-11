@@ -33,7 +33,7 @@ export default function SPKDetailPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filterType] = useState("Semua Tipe");
-  const [userRole] = useState(() => Cookies.get("user_role") || "USER");
+  const [userRole] = useState(() => Cookies.get("role") || "USER");
   const [selectedWilayah, setSelectedWilayah] = useState(
     () => Cookies.get("wilayah_id") || ""
   );
@@ -44,6 +44,7 @@ export default function SPKDetailPage() {
     slug,
     activeTab
   );
+  const isAdmin = String(userRole).trim().toUpperCase() === "ADMINISTRATOR";
 
   useEffect(() => {
     const token = Cookies.get("user_token") || "";
@@ -220,14 +221,14 @@ export default function SPKDetailPage() {
                   <select
                     value={selectedWilayah}
                     onChange={(e) => setSelectedWilayah(e.target.value)}
-                    disabled={userRole?.toUpperCase() !== "ADMINISTRATOR"}
-                    className={`w-full border text-black text-xs rounded-2xl px-3 py-3 outline-none appearance-none font-bold shadow-sm transition-all ${
-                      userRole?.toUpperCase() !== "ADMINISTRATOR"
+                    disabled={!isAdmin}
+                    className={`w-full border text-xs rounded-2xl px-3 py-3 outline-none appearance-none font-bold shadow-sm transition-all ${
+                      !isAdmin
                         ? "bg-gray-200 text-gray-500 border-gray-100 cursor-not-allowed"
                         : "bg-white border-gray-200 focus:border-blue-500"
                     }`}
                   >
-                    {userRole?.toUpperCase() === "ADMINISTRATOR" ? (
+                    {isAdmin ? (
                       <>
                         <option value="">Semua Wilayah</option>
                         {listWilayah.map((w) => (

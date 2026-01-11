@@ -3,31 +3,57 @@ import { spkService } from "@/core/services/spkService";
 import Cookies from "js-cookie";
 import { GenericSPKDetail } from "@/core/types/spk";
 
-export const useSPK = (slug: string, tab: string) => {
+export const useSPK = (slug: string, activeTab: string) => {
   const [data, setData] = useState<GenericSPKDetail[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const token = Cookies.get("user_token") || "";
-  const fetchData = useCallback(async () => {
-    if (!token || !slug) return;
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+
+  const fetchData = useCallback(async (pageNum: number, isRefetch: boolean = false) => {
+    setLoading(true);
     try {
-      setLoading(true);
-      setError(null);
-      const status = tab === "Selesai" ? 1 : 0;
-      const response = await spkService.getList(slug, status, token);
+      const status = activeTab === "Sedang Diproses" ? 0 : 1;
+      const token = Cookies.get("user_token") || "";
       
-      setData(response);
+      const newData = await spkService.getList(slug, status, token, pageNum);
+
+      if (isRefetch) {
+        setData(newData);
+        setHasMore(newData.length === 10);
+      } else {
+        setData((prev) => [...prev, ...newData]);
+        if (newData.length < 10) {
+          setHasMore(false);
+        }
+      }
+      setError(null);
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "Gagal mengambil data";
-      setError(errorMessage);
+      setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
     }
-  }, [slug, tab, token]);
+  }, [slug, activeTab]);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    setPage(1);
+    setHasMore(true);
+    fetchData(1, true);
+  }, [slug, activeTab, fetchData]);
 
-  return { data, loading, error, refetch: fetchData };
+  const loadMore = () => {
+    if (!loading && hasMore) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      fetchData(nextPage);
+    }
+  };
+
+  const refetch = () => {
+    setPage(1);
+    setHasMore(true);
+    fetchData(1, true);
+  };
+
+  return { data, loading, error, refetch, loadMore, hasMore };
 };

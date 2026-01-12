@@ -74,4 +74,5 @@ export interface GenericSPKDetail {
   periode_bk_segel?: string | null;
   periode_segel?: string | null;
   periode_proses?: string | null;
+  periode?: string | null;
 }

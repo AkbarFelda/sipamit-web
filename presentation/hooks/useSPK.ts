@@ -55,5 +55,19 @@ export const useSPK = (slug: string, activeTab: string) => {
     fetchData(1, true);
   };
 
-  return { data, loading, error, refetch, loadMore, hasMore };
+  return { 
+    data, 
+    loading, 
+    error, 
+    hasMore, 
+    fetchData, 
+    loadMore: () => {
+      if (!loading && hasMore) {
+        const nextPage = page + 1;
+        setPage(nextPage);
+        fetchData(nextPage);
+      }
+    }, 
+    refetch: () => fetchData(1, true) 
+  };
 };
